@@ -7,3 +7,7 @@
    - Linker - Additional Library Directories
    copy original python installation location
    example: C:\Users\kanda-pc\AppData\Local\Programs\Python\Python38\libs
+   
+   
+   [Testing]
+   
