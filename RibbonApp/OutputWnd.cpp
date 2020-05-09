@@ -56,9 +56,9 @@ int COutputWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Create output panes:
 	const DWORD dwStyle = LBS_NOINTEGRALHEIGHT | WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL;
 
-	if (!m_wndOutputBuild.Create(dwStyle, rectDummy, &m_wndTabs, 2) )//||
-		/*!m_wndOutputDebug.Create(dwStyle, rectDummy, &m_wndTabs, 3) ||
-		!m_wndOutputFind.Create(dwStyle, rectDummy, &m_wndTabs, 4))*/
+	if (!m_wndOutputBuild.Create(dwStyle, rectDummy, &m_wndTabs, 2) ||
+		!m_wndOutputDebug.Create(dwStyle, rectDummy, &m_wndTabs, 3))// ||
+		//!m_wndOutputFind.Create(dwStyle, rectDummy, &m_wndTabs, 4))*/
 	{
 		TRACE0("Failed to create output windows\n");
 		return -1;      // fail to create
@@ -70,9 +70,11 @@ int COutputWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	BOOL bNameValid;
 
 	// Attach list windows to tab:
-	bNameValid = strTabName.LoadString(IDS_BUILD_TAB);
-	ASSERT(bNameValid);
-	m_wndTabs.AddTab(&m_wndOutputBuild, strTabName, (UINT)0);
+	//bNameValid = strTabName.LoadString(IDS_BUILD_TAB);
+	//ASSERT(bNameValid);
+	m_wndTabs.AddTab(&m_wndOutputBuild, _T("Output"), (UINT)0);
+	m_wndTabs.AddTab(&m_wndOutputDebug, _T("Script Recording"), (UINT)1);
+
 	/*bNameValid = strTabName.LoadString(IDS_DEBUG_TAB);
 	ASSERT(bNameValid);*/
 	/*m_wndTabs.AddTab(&m_wndOutputDebug, strTabName, (UINT)1);
@@ -119,6 +121,11 @@ void COutputWnd::OutputStr(CString str)
 {
 	m_wndOutputBuild.AddString(str);
 }
+
+void COutputWnd::ScriptRecording(CString str)
+{
+	m_wndOutputDebug.AddString(str);
+}
 //
 //void COutputWnd::FillBuildWindow()
 //{
@@ -144,8 +151,8 @@ void COutputWnd::OutputStr(CString str)
 void COutputWnd::UpdateFonts()
 {
 	m_wndOutputBuild.SetFont(&afxGlobalData.fontRegular);
-	/*m_wndOutputDebug.SetFont(&afxGlobalData.fontRegular);
-	m_wndOutputFind.SetFont(&afxGlobalData.fontRegular);*/
+	m_wndOutputDebug.SetFont(&afxGlobalData.fontRegular);
+	//m_wndOutputFind.SetFont(&afxGlobalData.fontRegular);*/
 }
 
 /////////////////////////////////////////////////////////////////////////////

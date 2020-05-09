@@ -46,7 +46,7 @@ protected:
 	CMFCTabCtrl	m_wndTabs;
 
 	COutputList m_wndOutputBuild;
-	//COutputList m_wndOutputDebug;
+	COutputList m_wndOutputDebug;
 	//COutputList m_wndOutputFind;
 
 protected:
@@ -60,6 +60,7 @@ protected:
 
 // Implementation
 public:
+	void ScriptRecording(CString str);
 	void OutputStr(CString str);
 	virtual ~COutputWnd();
 

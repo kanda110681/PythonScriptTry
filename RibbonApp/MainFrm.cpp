@@ -41,7 +41,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_BUT_MUL, &CMainFrame::OnButMul)
 	ON_COMMAND(ID_BUT_DIV, &CMainFrame::OnButDiv)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_VAL, &CMainFrame::OnUpdateEditVal)
-	//ON_XTP_EXECUTE(ID_EDIT_VAL, OnEditParam)
 
 END_MESSAGE_MAP()
 
@@ -109,6 +108,15 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	// set the visual manager and style based on persisted value
 	OnApplicationLook(theApp.m_nAppLook);
+
+	CMFCRibbonEdit* pEdit = DYNAMIC_DOWNCAST(CMFCRibbonEdit, m_wndRibbonBar.FindByID(ID_EDIT_VAL));
+	/*if (pEdit)
+	{
+		CArray<CMFCRibbonBaseElement*, CMFCRibbonBaseElement*> elems;
+		pEdit->GetVisibleElements(elems);
+		elems.GetAt(0)->SetVisible(TRUE);
+		elems.GetAt(1)->SetVisible(TRUE);
+	}*/
 
 	return 0;
 }
@@ -325,6 +333,7 @@ void CMainFrame::OnButResult()
 	d.val = _ttoi(inputStr);
 	inputList.push_back(d);
 	m_wndOutput.OutputStr(inputStr);
+	m_wndOutput.ScriptRecording(inputStr);
 
 	int left = 0;
 	Operator op = OP_INVALID;
@@ -349,7 +358,10 @@ void CMainFrame::OnButResult()
 				else if (op == OP_MUL)
 					left = left * d.val;
 				else if (op == OP_DIV)
+				{
+					assert(d.val != 0);
 					left = left / d.val;
+				}
 				
 				op = OP_INVALID;
 			}
@@ -363,7 +375,9 @@ void CMainFrame::OnButResult()
 	CString res;
 	res.Format(_T("%d"), left);
 	m_wndOutput.OutputStr(_T("="));
+	m_wndOutput.ScriptRecording(_T("="));
 	m_wndOutput.OutputStr(res);
+	m_wndOutput.OutputStr(_T("--------------------------------------------------------------------------------------"));
 	inputList.clear();
 }
 
@@ -375,11 +389,13 @@ void CMainFrame::OnButPlus()
 	d.val = _ttoi(inputStr);
 	inputList.push_back(d);
 	m_wndOutput.OutputStr(inputStr);
+	m_wndOutput.ScriptRecording(inputStr);
 
 	d.dt = DT_OPERATOR;
 	d.val = OP_PLUS;
 	inputList.push_back(d);
 	m_wndOutput.OutputStr(_T("+"));
+	m_wndOutput.ScriptRecording(_T("+"));
 
 	clearInput();
 }
@@ -392,11 +408,13 @@ void CMainFrame::OnButMinus()
 	d.val = _ttoi(inputStr);
 	inputList.push_back(d);
 	m_wndOutput.OutputStr(inputStr);
+	m_wndOutput.ScriptRecording(inputStr);
 
 	d.dt = DT_OPERATOR;
 	d.val = OP_MINUS;
 	inputList.push_back(d);
 	m_wndOutput.OutputStr(_T("-"));
+	m_wndOutput.ScriptRecording(_T("-"));
 
 	clearInput();
 }
@@ -409,11 +427,13 @@ void CMainFrame::OnButMul()
 	d.val = _ttoi(inputStr);
 	inputList.push_back(d);
 	m_wndOutput.OutputStr(inputStr);
+	m_wndOutput.ScriptRecording(inputStr);
 
 	d.dt = DT_OPERATOR;
 	d.val = OP_MUL;
 	inputList.push_back(d);
 	m_wndOutput.OutputStr(_T("*"));
+	m_wndOutput.ScriptRecording(_T("*"));
 
 	clearInput();
 }
@@ -426,11 +446,13 @@ void CMainFrame::OnButDiv()
 	d.val = _ttoi(inputStr);
 	inputList.push_back(d);
 	m_wndOutput.OutputStr(inputStr);
+	m_wndOutput.ScriptRecording(inputStr);
 
 	d.dt = DT_OPERATOR;
 	d.val = OP_DIV;
 	inputList.push_back(d);
 	m_wndOutput.OutputStr(_T("/"));
+	m_wndOutput.ScriptRecording(_T("/"));
 
 	clearInput();
 }
@@ -438,16 +460,12 @@ void CMainFrame::OnButDiv()
 
 void CMainFrame::OnUpdateEditVal(CCmdUI* pCmdUI)
 {
-	if (pCmdUI->m_nID != ID_EDIT_VAL)
-		return;
+	pCmdUI->Enable();
 
 	CMFCRibbonEdit* pEdit = DYNAMIC_DOWNCAST(CMFCRibbonEdit, m_wndRibbonBar.FindByID(ID_EDIT_VAL));
 	if (!pEdit)
 		return;
-
 	inputStr = pEdit->GetEditText();
-	pCmdUI->Enable();
-	
 }
 
 void CMainFrame::clearInput()
