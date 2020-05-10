@@ -36,8 +36,9 @@ protected:
 class COutputWnd : public CDockablePane
 {
 // Construction
+	CString name;
 public:
-	COutputWnd() noexcept;
+	COutputWnd(CString name=_T("output")) noexcept;
 
 	void UpdateFonts();
 
@@ -46,7 +47,7 @@ protected:
 	CMFCTabCtrl	m_wndTabs;
 
 	COutputList m_wndOutputBuild;
-	COutputList m_wndOutputDebug;
+	//COutputList m_wndOutputDebug;
 	//COutputList m_wndOutputFind;
 
 protected:
@@ -60,7 +61,7 @@ protected:
 
 // Implementation
 public:
-	void ScriptRecording(CString str);
+	//void ScriptRecording(CString str);
 	void OutputStr(CString str);
 	virtual ~COutputWnd();
 

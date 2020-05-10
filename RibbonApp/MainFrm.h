@@ -52,19 +52,17 @@ protected:  // control bar embedded members
 	CMFCRibbonApplicationButton m_MainButton;
 	CMFCToolBarImages m_PanelImages;
 	CMFCRibbonStatusBar  m_wndStatusBar;
-	CFileView         m_wndFileView;
-	CClassView        m_wndClassView;
-	COutputWnd        m_wndOutput;
-	CPropertiesWnd    m_wndProperties;
+	//CFileView         m_wndFileView;
+	//CClassView        m_wndClassView;
+	COutputWnd        m_wndOutput, scriptOutput;
+	//CPropertiesWnd    m_wndProperties;
 
 // Generated message map functions
 protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnApplicationLook(UINT id);
 	afx_msg void OnUpdateApplicationLook(CCmdUI* pCmdUI);
-	afx_msg void OnFilePrint();
-	afx_msg void OnFilePrintPreview();
-	afx_msg void OnUpdateFilePrintPreview(CCmdUI* pCmdUI);
+	
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
 	DECLARE_MESSAGE_MAP()
 
@@ -82,6 +80,7 @@ public:
 
 	CString inputStr;
 	list<Data> inputList;
+	afx_msg void OnButInputapply();
 };
 
 

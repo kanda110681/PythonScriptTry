@@ -25,8 +25,31 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // COutputBar
 
-COutputWnd::COutputWnd() noexcept
+#define FN "igt_sample_script.py"
+
+void resetPyScriptFile()
 {
+	FILE* fp = 0;
+	fopen_s(&fp, FN, "w");
+	if (!fp) return;
+	fclose(fp);
+}
+void updatePyScriptFile(CString str)
+{
+	FILE* fp = 0;
+	fopen_s(&fp, FN, "a+");
+	if (!fp) return;
+
+	//CT2A ascii(str);
+	CStringA charstr(str);
+
+	fprintf(fp, "\n%s", (const char*)charstr);
+	fclose(fp);
+}
+
+COutputWnd::COutputWnd(CString name) noexcept
+{
+	this->name = name;
 }
 
 COutputWnd::~COutputWnd()
@@ -56,8 +79,8 @@ int COutputWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Create output panes:
 	const DWORD dwStyle = LBS_NOINTEGRALHEIGHT | WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL;
 
-	if (!m_wndOutputBuild.Create(dwStyle, rectDummy, &m_wndTabs, 2) ||
-		!m_wndOutputDebug.Create(dwStyle, rectDummy, &m_wndTabs, 3))// ||
+	if (!m_wndOutputBuild.Create(dwStyle, rectDummy, &m_wndTabs, 2)) //||
+		//!m_wndOutputDebug.Create(dwStyle, rectDummy, &m_wndTabs, 3))// ||
 		//!m_wndOutputFind.Create(dwStyle, rectDummy, &m_wndTabs, 4))*/
 	{
 		TRACE0("Failed to create output windows\n");
@@ -72,8 +95,8 @@ int COutputWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Attach list windows to tab:
 	//bNameValid = strTabName.LoadString(IDS_BUILD_TAB);
 	//ASSERT(bNameValid);
-	m_wndTabs.AddTab(&m_wndOutputBuild, _T("Output"), (UINT)0);
-	m_wndTabs.AddTab(&m_wndOutputDebug, _T("Script Recording"), (UINT)1);
+	m_wndTabs.AddTab(&m_wndOutputBuild, name, (UINT)0);
+	//m_wndTabs.AddTab(&m_wndOutputDebug, _T("Script Recording"), (UINT)1);
 
 	/*bNameValid = strTabName.LoadString(IDS_DEBUG_TAB);
 	ASSERT(bNameValid);*/
@@ -119,13 +142,15 @@ void COutputWnd::AdjustHorzScroll(CListBox& wndListBox)
 
 void COutputWnd::OutputStr(CString str)
 {
+	if(name.Compare(_T("output")) != 0 )
+		updatePyScriptFile(str);
 	m_wndOutputBuild.AddString(str);
 }
 
-void COutputWnd::ScriptRecording(CString str)
-{
-	m_wndOutputDebug.AddString(str);
-}
+//void COutputWnd::ScriptRecording(CString str)
+//{
+//	m_wndOutputDebug.AddString(str);
+//}
 //
 //void COutputWnd::FillBuildWindow()
 //{
@@ -151,7 +176,7 @@ void COutputWnd::ScriptRecording(CString str)
 void COutputWnd::UpdateFonts()
 {
 	m_wndOutputBuild.SetFont(&afxGlobalData.fontRegular);
-	m_wndOutputDebug.SetFont(&afxGlobalData.fontRegular);
+	//m_wndOutputDebug.SetFont(&afxGlobalData.fontRegular);
 	//m_wndOutputFind.SetFont(&afxGlobalData.fontRegular);*/
 }
 
@@ -160,6 +185,7 @@ void COutputWnd::UpdateFonts()
 
 COutputList::COutputList() noexcept
 {
+	
 }
 
 COutputList::~COutputList()

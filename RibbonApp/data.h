@@ -1,4 +1,6 @@
 #pragma once
+#include <string>
+using namespace std;
 
 enum DataType
 {
@@ -7,7 +9,7 @@ enum DataType
 	DT_OPERATOR,
 };
 
-enum Operator
+enum Operator // operation functions
 {
 	OP_INVALID,
 	OP_PLUS,
@@ -19,5 +21,5 @@ enum Operator
 struct Data
 {
 	DataType dt;
-	int val;
+	CString value;
 };

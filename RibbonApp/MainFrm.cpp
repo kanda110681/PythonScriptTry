@@ -30,10 +30,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_WM_CREATE()
 	ON_COMMAND_RANGE(ID_VIEW_APPLOOK_WIN_2000, ID_VIEW_APPLOOK_WINDOWS_7, &CMainFrame::OnApplicationLook)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_VIEW_APPLOOK_WIN_2000, ID_VIEW_APPLOOK_WINDOWS_7, &CMainFrame::OnUpdateApplicationLook)
-	ON_COMMAND(ID_FILE_PRINT, &CMainFrame::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CMainFrame::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CMainFrame::OnFilePrintPreview)
-	ON_UPDATE_COMMAND_UI(ID_FILE_PRINT_PREVIEW, &CMainFrame::OnUpdateFilePrintPreview)
+	
 	ON_WM_SETTINGCHANGE()
 	ON_COMMAND(ID_BUT_RESULT, &CMainFrame::OnButResult)
 	ON_COMMAND(ID_BUT_PLUS, &CMainFrame::OnButPlus)
@@ -42,11 +39,12 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_BUT_DIV, &CMainFrame::OnButDiv)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_VAL, &CMainFrame::OnUpdateEditVal)
 
+	ON_COMMAND(ID_BUT_INPUTAPPLY, &CMainFrame::OnButInputapply)
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
 
-CMainFrame::CMainFrame() noexcept
+CMainFrame::CMainFrame() noexcept : scriptOutput(_T("Scripts"))
 {
 	// TODO: add member initialization code here
 	theApp.m_nAppLook = theApp.GetInt(_T("ApplicationLook"), ID_VIEW_APPLOOK_VS_2008);
@@ -96,15 +94,19 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 	}
 
-	m_wndFileView.EnableDocking(CBRS_ALIGN_ANY);
+	/*m_wndFileView.EnableDocking(CBRS_ALIGN_ANY);
 	m_wndClassView.EnableDocking(CBRS_ALIGN_ANY);
 	DockPane(&m_wndFileView);
 	CDockablePane* pTabbedBar = nullptr;
-	m_wndClassView.AttachToTabWnd(&m_wndFileView, DM_SHOW, TRUE, &pTabbedBar);
-	m_wndOutput.EnableDocking(CBRS_ALIGN_ANY);
+	m_wndClassView.AttachToTabWnd(&m_wndFileView, DM_SHOW, TRUE, &pTabbedBar);*/
+	m_wndOutput.EnableDocking(CBRS_ALIGN_BOTTOM | CBRS_ALIGN_LEFT);
 	DockPane(&m_wndOutput);
-	m_wndProperties.EnableDocking(CBRS_ALIGN_ANY);
-	DockPane(&m_wndProperties);
+
+	scriptOutput.EnableDocking(CBRS_ALIGN_ANY);
+	DockPane(&scriptOutput);
+
+	/*m_wndProperties.EnableDocking(CBRS_ALIGN_ANY);
+	DockPane(&m_wndProperties);*/
 
 	// set the visual manager and style based on persisted value
 	OnApplicationLook(theApp.m_nAppLook);
@@ -117,6 +119,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		elems.GetAt(0)->SetVisible(TRUE);
 		elems.GetAt(1)->SetVisible(TRUE);
 	}*/
+
+	scriptOutput.OutputStr(_T("import igold_pre as igt"));
 
 	return 0;
 }
@@ -136,44 +140,46 @@ BOOL CMainFrame::CreateDockingWindows()
 	BOOL bNameValid;
 
 	// Create class view
-	CString strClassView;
-	bNameValid = strClassView.LoadString(IDS_CLASS_VIEW);
-	ASSERT(bNameValid);
-	if (!m_wndClassView.Create(strClassView, this, CRect(0, 0, 200, 200), TRUE, ID_VIEW_CLASSVIEW, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_LEFT | CBRS_FLOAT_MULTI))
-	{
-		TRACE0("Failed to create Class View window\n");
-		return FALSE; // failed to create
-	}
+	//CString strClassView;
+	//bNameValid = strClassView.LoadString(IDS_CLASS_VIEW);
+	//ASSERT(bNameValid);
+	//if (!m_wndClassView.Create(strClassView, this, CRect(0, 0, 200, 200), TRUE, ID_VIEW_CLASSVIEW, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_LEFT | CBRS_FLOAT_MULTI))
+	//{
+	//	TRACE0("Failed to create Class View window\n");
+	//	return FALSE; // failed to create
+	//}
 
-	// Create file view
-	CString strFileView;
-	bNameValid = strFileView.LoadString(IDS_FILE_VIEW);
-	ASSERT(bNameValid);
-	if (!m_wndFileView.Create(strFileView, this, CRect(0, 0, 200, 200), TRUE, ID_VIEW_FILEVIEW, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_LEFT| CBRS_FLOAT_MULTI))
-	{
-		TRACE0("Failed to create File View window\n");
-		return FALSE; // failed to create
-	}
+	//// Create file view
+	//CString strFileView;
+	//bNameValid = strFileView.LoadString(IDS_FILE_VIEW);
+	//ASSERT(bNameValid);
+	//if (!m_wndFileView.Create(strFileView, this, CRect(0, 0, 200, 200), TRUE, ID_VIEW_FILEVIEW, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_LEFT| CBRS_FLOAT_MULTI))
+	//{
+	//	TRACE0("Failed to create File View window\n");
+	//	return FALSE; // failed to create
+	//}
 
 	// Create output window
 	CString strOutputWnd;
 	bNameValid = strOutputWnd.LoadString(IDS_OUTPUT_WND);
 	ASSERT(bNameValid);
-	if (!m_wndOutput.Create(strOutputWnd, this, CRect(0, 0, 100, 100), TRUE, ID_VIEW_OUTPUTWND, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_BOTTOM | CBRS_FLOAT_MULTI))
+	if (!m_wndOutput.Create(strOutputWnd, this, CRect(0, 0, 100, 500), TRUE, ID_VIEW_OUTPUTWND, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |  CBRS_BOTTOM | CBRS_FLOAT_MULTI))
 	{
 		TRACE0("Failed to create Output window\n");
 		return FALSE; // failed to create
 	}
 
-	// Create properties window
-	CString strPropertiesWnd;
-	bNameValid = strPropertiesWnd.LoadString(IDS_PROPERTIES_WND);
-	ASSERT(bNameValid);
-	if (!m_wndProperties.Create(strPropertiesWnd, this, CRect(0, 0, 200, 200), TRUE, ID_VIEW_PROPERTIESWND, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_RIGHT | CBRS_FLOAT_MULTI))
-	{
-		TRACE0("Failed to create Properties window\n");
-		return FALSE; // failed to create
-	}
+	scriptOutput.Create(_T("Script Recording"), this, CRect(0, 0, 100, 500), TRUE, ID_VIEW_SCRIPTWINDOW, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_TOP | CBRS_FLOAT_MULTI);
+
+	//// Create properties window
+	//CString strPropertiesWnd;
+	//bNameValid = strPropertiesWnd.LoadString(IDS_PROPERTIES_WND);
+	//ASSERT(bNameValid);
+	//if (!m_wndProperties.Create(strPropertiesWnd, this, CRect(0, 0, 200, 200), TRUE, ID_VIEW_PROPERTIESWND, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_RIGHT | CBRS_FLOAT_MULTI))
+	//{
+	//	TRACE0("Failed to create Properties window\n");
+	//	return FALSE; // failed to create
+	//}
 
 	SetDockingWindowIcons(theApp.m_bHiColorIcons);
 	return TRUE;
@@ -181,17 +187,19 @@ BOOL CMainFrame::CreateDockingWindows()
 
 void CMainFrame::SetDockingWindowIcons(BOOL bHiColorIcons)
 {
-	HICON hFileViewIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(bHiColorIcons ? IDI_FILE_VIEW_HC : IDI_FILE_VIEW), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
+	/*HICON hFileViewIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(bHiColorIcons ? IDI_FILE_VIEW_HC : IDI_FILE_VIEW), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
 	m_wndFileView.SetIcon(hFileViewIcon, FALSE);
 
 	HICON hClassViewIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(bHiColorIcons ? IDI_CLASS_VIEW_HC : IDI_CLASS_VIEW), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
-	m_wndClassView.SetIcon(hClassViewIcon, FALSE);
+	m_wndClassView.SetIcon(hClassViewIcon, FALSE);*/
 
 	HICON hOutputBarIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(bHiColorIcons ? IDI_OUTPUT_WND_HC : IDI_OUTPUT_WND), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
 	m_wndOutput.SetIcon(hOutputBarIcon, FALSE);
 
-	HICON hPropertiesBarIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(bHiColorIcons ? IDI_PROPERTIES_WND_HC : IDI_PROPERTIES_WND), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
-	m_wndProperties.SetIcon(hPropertiesBarIcon, FALSE);
+	scriptOutput.SetIcon(hOutputBarIcon, FALSE);
+
+	/*HICON hPropertiesBarIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(bHiColorIcons ? IDI_PROPERTIES_WND_HC : IDI_PROPERTIES_WND), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
+	m_wndProperties.SetIcon(hPropertiesBarIcon, FALSE);*/
 
 }
 
@@ -297,43 +305,38 @@ void CMainFrame::OnUpdateApplicationLook(CCmdUI* pCmdUI)
 }
 
 
-void CMainFrame::OnFilePrint()
-{
-	if (IsPrintPreview())
-	{
-		PostMessage(WM_COMMAND, AFX_ID_PREVIEW_PRINT);
-	}
-}
-
-void CMainFrame::OnFilePrintPreview()
-{
-	if (IsPrintPreview())
-	{
-		PostMessage(WM_COMMAND, AFX_ID_PREVIEW_CLOSE);  // force Print Preview mode closed
-	}
-}
-
-void CMainFrame::OnUpdateFilePrintPreview(CCmdUI* pCmdUI)
-{
-	pCmdUI->SetCheck(IsPrintPreview());
-}
-
 void CMainFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
 	CFrameWndEx::OnSettingChange(uFlags, lpszSection);
 	m_wndOutput.UpdateFonts();
 }
 
+float func_add(float a, float b=0)
+{
+	return a + b;
+}
+
+float func_minus(float a, float b=0)
+{
+	return a - b;
+}
+
+float func_mul(float a, float b=1)
+{
+	return a * b;
+}
+
+float func_div(float a, float b = 1)
+{
+	return a / b;
+}
 
 void CMainFrame::OnButResult()
 {
+	scriptOutput.OutputStr(_T("resultFunc()"));
+
 	clearInput();
 	Data d;
-	d.dt = DT_INPUT;
-	d.val = _ttoi(inputStr);
-	inputList.push_back(d);
-	m_wndOutput.OutputStr(inputStr);
-	m_wndOutput.ScriptRecording(inputStr);
 
 	int left = 0;
 	Operator op = OP_INVALID;
@@ -345,22 +348,22 @@ void CMainFrame::OnButResult()
 		{
 			if (!bLeft)
 			{
-				left = d.val;
+				left = _ttoi(d.value);
 				op = OP_INVALID;
 				bLeft = true;
 			}
 			else if( op != OP_INVALID)
 			{
 				if (op == OP_PLUS)
-					left = left + d.val;
+					left = func_add(left, _ttoi(d.value));
 				else if (op == OP_MINUS)
-					left = left - d.val;
+					left = func_minus(left, _ttoi(d.value));
 				else if (op == OP_MUL)
-					left = left * d.val;
+					left = func_mul(left , _ttoi(d.value));
 				else if (op == OP_DIV)
 				{
-					assert(d.val != 0);
-					left = left / d.val;
+					assert(_ttoi(d.value) != 0);
+					left = func_div(left , _ttoi(d.value));
 				}
 				
 				op = OP_INVALID;
@@ -368,16 +371,22 @@ void CMainFrame::OnButResult()
 		}
 		else if (d.dt == DT_OPERATOR)
 		{
-			op = (Operator) d.val;
+			op = OP_INVALID;
+			if (d.value.Compare(_T("+"))==0)
+				op = OP_PLUS;
+			else if (d.value.Compare(_T("-")) == 0)
+				op = OP_MINUS;
+			else if (d.value.Compare(_T("*")) == 0)
+				op = OP_MUL;
+			else if (d.value.Compare(_T("/")) == 0)
+				op = OP_DIV;
 		}
 	}
 
 	CString res;
 	res.Format(_T("%d"), left);
-	m_wndOutput.OutputStr(_T("="));
-	m_wndOutput.ScriptRecording(_T("="));
 	m_wndOutput.OutputStr(res);
-	m_wndOutput.OutputStr(_T("--------------------------------------------------------------------------------------"));
+
 	inputList.clear();
 }
 
@@ -385,78 +394,41 @@ void CMainFrame::OnButResult()
 void CMainFrame::OnButPlus()
 {
 	Data d;
-	d.dt = DT_INPUT;
-	d.val = _ttoi(inputStr);
-	inputList.push_back(d);
-	m_wndOutput.OutputStr(inputStr);
-	m_wndOutput.ScriptRecording(inputStr);
-
 	d.dt = DT_OPERATOR;
-	d.val = OP_PLUS;
+	d.value = _T("+");
 	inputList.push_back(d);
-	m_wndOutput.OutputStr(_T("+"));
-	m_wndOutput.ScriptRecording(_T("+"));
-
-	clearInput();
+	scriptOutput.OutputStr(_T("igt.operationFunc(\"+\")"));
 }
 
 
 void CMainFrame::OnButMinus()
 {
 	Data d;
-	d.dt = DT_INPUT;
-	d.val = _ttoi(inputStr);
-	inputList.push_back(d);
-	m_wndOutput.OutputStr(inputStr);
-	m_wndOutput.ScriptRecording(inputStr);
-
 	d.dt = DT_OPERATOR;
-	d.val = OP_MINUS;
+	d.value = _T("-");
 	inputList.push_back(d);
-	m_wndOutput.OutputStr(_T("-"));
-	m_wndOutput.ScriptRecording(_T("-"));
-
-	clearInput();
+	scriptOutput.OutputStr(_T("igt.operationFunc(\"-\")"));
 }
 
 
 void CMainFrame::OnButMul()
 {
 	Data d;
-	d.dt = DT_INPUT;
-	d.val = _ttoi(inputStr);
-	inputList.push_back(d);
-	m_wndOutput.OutputStr(inputStr);
-	m_wndOutput.ScriptRecording(inputStr);
-
 	d.dt = DT_OPERATOR;
-	d.val = OP_MUL;
+	d.value = _T("*");
 	inputList.push_back(d);
-	m_wndOutput.OutputStr(_T("*"));
-	m_wndOutput.ScriptRecording(_T("*"));
-
-	clearInput();
+	scriptOutput.OutputStr(_T("igt.operationFunc(\"*\")"));
 }
 
 
 void CMainFrame::OnButDiv()
 {
 	Data d;
-	d.dt = DT_INPUT;
-	d.val = _ttoi(inputStr);
-	inputList.push_back(d);
-	m_wndOutput.OutputStr(inputStr);
-	m_wndOutput.ScriptRecording(inputStr);
-
 	d.dt = DT_OPERATOR;
-	d.val = OP_DIV;
+	d.value = _T("/");
 	inputList.push_back(d);
-	m_wndOutput.OutputStr(_T("/"));
-	m_wndOutput.ScriptRecording(_T("/"));
-
-	clearInput();
+	scriptOutput.OutputStr(_T("igt.operationFunc(\"/\")"));
 }
-
 
 void CMainFrame::OnUpdateEditVal(CCmdUI* pCmdUI)
 {
@@ -475,4 +447,20 @@ void CMainFrame::clearInput()
 	{
 		pEdit->SetEditText(_T(""));
 	}
+}
+
+
+void CMainFrame::OnButInputapply()
+{
+	Data d;
+	d.dt = DT_INPUT;
+	d.value = inputStr;
+	//d.value = _ttoi(inputStr);
+	inputList.push_back(d);
+
+	CString input;
+	input.Format(_T("igt.inputFunc(\"%s\")"), inputStr);
+	scriptOutput.OutputStr(input);
+
+	clearInput();
 }
